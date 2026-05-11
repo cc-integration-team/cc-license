@@ -4,8 +4,6 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>{{.Title}} · cc-license</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/themes/light.css">
   <style>
     :root {
       --bg: #f5f7fb;
@@ -90,7 +88,6 @@
     .row { display:grid; grid-template-columns: 1fr 1fr; gap: 16px; }
     .muted { color: var(--muted); font-size: 13.5px; line-height: 1.55; margin: 0; }
     code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; background: var(--code-bg); padding: 1px 6px; border-radius: 4px; font-size: 12.5px; }
-    .flatpickr-input { background: #ffffff; }
   </style>
 </head>
 <body>
@@ -106,20 +103,6 @@
   <main>
     {{template "content" .}}
   </main>
-  <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js"></script>
-  <script>
-    document.querySelectorAll('input[data-flatpickr]').forEach(function(el) {
-      flatpickr(el, {
-        enableTime: true,
-        enableSeconds: true,
-        time_24hr: true,
-        dateFormat: "Y-m-d\\TH:i:S",
-        altInput: true,
-        altFormat: "Y-m-d H:i:S",
-        allowInput: true
-      });
-    });
-  </script>
 </body>
 </html>
 {{end}}

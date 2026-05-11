@@ -7,9 +7,11 @@
   {{if .Error}}
   <div class="alert err">{{.Error}}</div>
   {{end}}
-  <form method="post" action="/sign">
+  <form method="post" action="/sign" enctype="multipart/form-data">
     <label>Private key (base64)</label>
-    <textarea name="priv" required>{{.Form.Priv}}</textarea>
+    <textarea name="priv">{{.Form.Priv}}</textarea>
+    <p class="muted" style="margin-top: 6px">or upload a key file:</p>
+    <input type="file" name="priv_file" accept=".key,.txt,text/plain" />
 
     <div class="row">
       <div>
@@ -17,32 +19,24 @@
         <input type="text" name="org" value="{{.Form.Org}}" required />
       </div>
       <div>
-        <label>License ID (optional)</label>
-        <input type="text" name="id" value="{{.Form.ID}}" />
+        <label>License ID (leave empty to auto-generate UUID)</label>
+        <input
+          type="text"
+          name="id"
+          value="{{.Form.ID}}"
+          placeholder="auto-generated UUID"
+        />
       </div>
     </div>
 
-    <div class="row">
-      <div>
-        <label>Issued at (leave empty for now)</label>
-        <input
-          type="text"
-          name="issued"
-          value="{{.Form.Issued}}"
-          data-flatpickr
-          placeholder="Pick a date and time"
-        />
-      </div>
-      <div>
-        <label>Validity (days)</label>
-        <input
-          type="number"
-          name="days"
-          value="{{if .Form.Days}}{{.Form.Days}}{{else}}365{{end}}"
-          min="1"
-        />
-      </div>
-    </div>
+    <label>Expires at *</label>
+    <input
+      type="datetime-local"
+      name="expires"
+      value="{{.Form.Expires}}"
+      step="1"
+      required
+    />
 
     <label>Features (comma separated)</label>
     <input
@@ -57,7 +51,9 @@
 </div>
 
 {{if .Result}}
-<div class="alert ok">License signed successfully.</div>
+<div class="alert ok">
+  License signed successfully. License ID: <code>{{.Result.License.ID}}</code>
+</div>
 <div class="card">
   <h2>License (JSON)</h2>
   <pre>{{.ResultJSON}}</pre>
@@ -68,12 +64,7 @@
   <pre>{{.Encoded}}</pre>
   <form method="post" action="/sign/download" style="display: inline">
     <input type="hidden" name="encoded" value="{{.Encoded}}" />
-    <button type="submit">Download license.txt</button>
-  </form>
-  <form method="post" action="/sign/download" style="display: inline">
-    <input type="hidden" name="encoded" value="{{.Encoded}}" />
-    <input type="hidden" name="format" value="json" />
-    <button type="submit" class="secondary">Download license.json</button>
+    <button type="submit">Download license.lic</button>
   </form>
 </div>
 {{end}} {{end}}

@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"namitech.io/cc-license/license"
-	"namitech.io/cc-license/web"
+	"github.com/cc-integration-team/cc-license/license"
+	"github.com/cc-integration-team/cc-license/web"
 )
 
 const usage = `cc-license - sign software licenses with ed25519
@@ -176,7 +176,7 @@ func runVerify(args []string) error {
 	if err != nil {
 		return err
 	}
-	if err := signed.Verify(pubKey); err != nil {
+	if err := license.Verify(signed, pubKey); err != nil {
 		return err
 	}
 
