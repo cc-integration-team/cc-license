@@ -281,8 +281,8 @@ func verifyFromForm(f signForm, data *pageData) error {
 	data.Valid = true
 	data.Result = signed
 	data.ResultJSON = string(pretty)
-	data.IssuedAt = signed.License.IssuedAt.UTC().Format(time.RFC3339)
-	data.ExpiresAt = signed.License.ExpiresAt.UTC().Format(time.RFC3339)
+	data.IssuedAt = signed.License.IssuedAt.UTC().Format("2006-01-02 15:04:05 UTC")
+	data.ExpiresAt = signed.License.ExpiresAt.UTC().Format("2006-01-02 15:04:05 UTC")
 	return nil
 }
 

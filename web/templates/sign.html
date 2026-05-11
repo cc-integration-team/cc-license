@@ -29,14 +29,24 @@
       </div>
     </div>
 
-    <label>Expires at *</label>
-    <input
-      type="datetime-local"
-      name="expires"
-      value="{{.Form.Expires}}"
-      step="1"
-      required
-    />
+    <label>Expires at * (UTC+0)</label>
+    <div class="datetime-row">
+      <input
+        id="expires-input"
+        type="datetime-local"
+        name="expires"
+        value="{{.Form.Expires}}"
+        step="1"
+        required
+      />
+      <button type="button" class="secondary" id="today-btn">
+        Today (UTC)
+      </button>
+    </div>
+    <p class="muted" style="margin-top: 6px">
+      Current UTC time: <code id="utc-now">—</code> · Values are interpreted as
+      UTC+0.
+    </p>
 
     <label>Features (comma separated)</label>
     <input
@@ -67,4 +77,45 @@
     <button type="submit">Download license.lic</button>
   </form>
 </div>
-{{end}} {{end}}
+{{end}}
+
+<script>
+  (function () {
+    function pad(n) {
+      return String(n).padStart(2, "0");
+    }
+    function utcParts(d) {
+      return {
+        date:
+          d.getUTCFullYear() +
+          "-" +
+          pad(d.getUTCMonth() + 1) +
+          "-" +
+          pad(d.getUTCDate()),
+        time:
+          pad(d.getUTCHours()) +
+          ":" +
+          pad(d.getUTCMinutes()) +
+          ":" +
+          pad(d.getUTCSeconds()),
+      };
+    }
+    function refreshNow() {
+      var p = utcParts(new Date());
+      var el = document.getElementById("utc-now");
+      if (el) el.textContent = p.date + " " + p.time + " UTC";
+    }
+    refreshNow();
+    setInterval(refreshNow, 1000);
+
+    var btn = document.getElementById("today-btn");
+    var input = document.getElementById("expires-input");
+    if (btn && input) {
+      btn.addEventListener("click", function () {
+        var p = utcParts(new Date());
+        input.value = p.date + "T" + p.time;
+      });
+    }
+  })();
+</script>
+{{end}}
