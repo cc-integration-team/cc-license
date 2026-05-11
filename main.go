@@ -82,7 +82,7 @@ func runSign(args []string) error {
 	org := fs.String("org", "", "organization name")
 	id := fs.String("id", "", "license id (optional)")
 	days := fs.Int("days", 365, "validity in days starting from -issued")
-	issued := fs.String("issued", "", "issue date in RFC3339, e.g. 2026-05-07T10:00:00+07:00 (default: now)")
+	issued := fs.String("issued", "", "issue date in RFC3339 UTC, e.g. 2026-05-07T10:00:00Z (default: now)")
 	features := fs.String("features", "", "comma-separated feature list")
 	fs.Parse(args)
 
@@ -103,12 +103,13 @@ func runSign(args []string) error {
 		return err
 	}
 
-	issuedAt := time.Now()
+	issuedAt := time.Now().UTC()
 	if *issued != "" {
 		issuedAt, err = time.Parse(time.RFC3339, *issued)
 		if err != nil {
 			return fmt.Errorf("-issued: %w", err)
 		}
+		issuedAt = issuedAt.UTC()
 	}
 	if *days < 1 {
 		return fmt.Errorf("-days must be >= 1")
@@ -143,8 +144,8 @@ func runSign(args []string) error {
 	pretty, _ := json.MarshalIndent(signed, "", "  ")
 	fmt.Println("License:")
 	fmt.Println(string(pretty))
-	fmt.Println("\nIssuedAt: ", signed.License.IssuedAt.Format(time.RFC3339))
-	fmt.Println("ExpiresAt:", signed.License.ExpiresAt.Format(time.RFC3339))
+	fmt.Println("\nIssuedAt: ", signed.License.IssuedAt.UTC().Format(time.RFC3339))
+	fmt.Println("ExpiresAt:", signed.License.ExpiresAt.UTC().Format(time.RFC3339))
 	fmt.Println("\nEncoded license (distribute this to the client):")
 	fmt.Println(encoded)
 	return nil
@@ -183,8 +184,8 @@ func runVerify(args []string) error {
 	pretty, _ := json.MarshalIndent(signed.License, "", "  ")
 	fmt.Println("License is valid:")
 	fmt.Println(string(pretty))
-	fmt.Println("IssuedAt: ", signed.License.IssuedAt.Format(time.RFC3339))
-	fmt.Println("ExpiresAt:", signed.License.ExpiresAt.Format(time.RFC3339))
+	fmt.Println("IssuedAt: ", signed.License.IssuedAt.UTC().Format(time.RFC3339))
+	fmt.Println("ExpiresAt:", signed.License.ExpiresAt.UTC().Format(time.RFC3339))
 	return nil
 }
 

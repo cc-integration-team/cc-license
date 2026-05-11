@@ -169,7 +169,7 @@ func signFromForm(f signForm) (*license.SignedLicense, string, error) {
 	if err != nil {
 		return nil, "", err
 	}
-	issuedAt := time.Now()
+	issuedAt := time.Now().UTC()
 	expiresAt, err := parseDateTime(f.Expires)
 	if err != nil {
 		return nil, "", fmt.Errorf("expires: %w", err)
@@ -281,21 +281,24 @@ func verifyFromForm(f signForm, data *pageData) error {
 	data.Valid = true
 	data.Result = signed
 	data.ResultJSON = string(pretty)
-	data.IssuedAt = signed.License.IssuedAt.Format(time.RFC3339)
-	data.ExpiresAt = signed.License.ExpiresAt.Format(time.RFC3339)
+	data.IssuedAt = signed.License.IssuedAt.UTC().Format(time.RFC3339)
+	data.ExpiresAt = signed.License.ExpiresAt.UTC().Format(time.RFC3339)
 	return nil
 }
 
 // parseDateTime accepts an HTML datetime-local value
-// (YYYY-MM-DDTHH:MM[:SS]) interpreted in the server's local timezone,
-// or a full RFC3339 timestamp.
+// (YYYY-MM-DDTHH:MM[:SS]) interpreted as UTC, or a full RFC3339 timestamp.
 func parseDateTime(s string) (time.Time, error) {
 	for _, layout := range []string{"2006-01-02T15:04", "2006-01-02T15:04:05"} {
-		if t, err := time.ParseInLocation(layout, s, time.Local); err == nil {
+		if t, err := time.ParseInLocation(layout, s, time.UTC); err == nil {
 			return t, nil
 		}
 	}
-	return time.Parse(time.RFC3339, s)
+	t, err := time.Parse(time.RFC3339, s)
+	if err != nil {
+		return time.Time{}, err
+	}
+	return t.UTC(), nil
 }
 
 func writeAttachment(w http.ResponseWriter, filename, contentType string, body []byte) {
