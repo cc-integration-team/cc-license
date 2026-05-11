@@ -1,8 +1,12 @@
 {{define "content"}}
 <div class="card">
   <h2>Verify License</h2>
-  <p class="muted">Paste the public key and the base64-encoded license to verify.</p>
-  {{if .Error}}<div class="alert err">{{.Error}}</div>{{end}}
+  <p class="muted">
+    Paste the public key and the base64-encoded license to verify.
+  </p>
+  {{if .Error}}
+  <div class="alert err">{{.Error}}</div>
+  {{end}}
   <form method="post" action="/verify">
     <label>Public key (base64)</label>
     <textarea name="pub" required>{{.Form.Pub}}</textarea>
@@ -19,7 +23,9 @@
 <div class="card">
   <h2>License details</h2>
   <pre>{{.ResultJSON}}</pre>
-  <p class="muted">Issued at: <code>{{.IssuedAt}}</code> · Expires at: <code>{{.ExpiresAt}}</code></p>
+  <p class="muted">
+    Issued at: <code>{{.IssuedAt}}</code> · Expires at:
+    <code>{{.ExpiresAt}}</code>
+  </p>
 </div>
-{{end}}
-{{end}}
+{{end}} {{end}}

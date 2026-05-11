@@ -1,25 +1,39 @@
 {{define "content"}}
 <div class="card">
   <h2>Generate Key Pair</h2>
-  <p class="muted">Generate a new ed25519 key pair (base64 encoded). Keep the private key safe — anyone who has it can sign licenses.</p>
+  <p class="muted">
+    Generate a new ed25519 key pair (base64 encoded). Keep the private key safe
+    — anyone who has it can sign licenses.
+  </p>
   <form method="post" action="/genkey">
     <button type="submit">Generate</button>
   </form>
 </div>
 
-{{if .Error}}<div class="alert err">{{.Error}}</div>{{end}}
-
-{{if .KeyPair}}
+{{if .Error}}
+<div class="alert err">{{.Error}}</div>
+{{end}} {{if .KeyPair}}
 <div class="card">
   <h2>Public key</h2>
   <pre>{{.KeyPair.PublicKey}}</pre>
-  <a class="btn" href="/genkey/download?type=public&amp;key={{.KeyPair.PublicKey | urlquery}}">Download public.key</a>
+  <a
+    class="btn"
+    href="/genkey/download?type=public&amp;key={{.KeyPair.PublicKey | urlquery}}"
+    >Download public.key</a
+  >
 </div>
 <div class="card">
   <h2>Private key</h2>
   <pre>{{.KeyPair.PrivateKey}}</pre>
-  <a class="btn" href="/genkey/download?type=private&amp;key={{.KeyPair.PrivateKey | urlquery}}">Download private.key</a>
-  <a class="btn secondary" href="/genkey/download?type=pair&amp;pub={{.KeyPair.PublicKey | urlquery}}&amp;priv={{.KeyPair.PrivateKey | urlquery}}">Download keypair.json</a>
+  <a
+    class="btn"
+    href="/genkey/download?type=private&amp;key={{.KeyPair.PrivateKey | urlquery}}"
+    >Download private.key</a
+  >
+  <a
+    class="btn secondary"
+    href="/genkey/download?type=pair&amp;pub={{.KeyPair.PublicKey | urlquery}}&amp;priv={{.KeyPair.PrivateKey | urlquery}}"
+    >Download keypair.json</a
+  >
 </div>
-{{end}}
-{{end}}
+{{end}} {{end}}
