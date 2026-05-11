@@ -73,10 +73,6 @@ func VerifyInterval(ctx context.Context, path string, pubKeyBase64 string, inter
 	errCh := make(chan error, 1)
 	go func() {
 		defer close(errCh)
-		if _, err := VerifyFromFile(path, pubKeyBase64); err != nil {
-			errCh <- err
-			return
-		}
 		ticker := time.NewTicker(interval)
 		defer ticker.Stop()
 		for {
