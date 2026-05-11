@@ -1,0 +1,23 @@
+{{define "content"}}
+<div class="card">
+  <h2>License toolkit</h2>
+  <p class="muted">Sign, verify and issue licenses with ed25519. All keys are generated in memory and never stored on the server.</p>
+</div>
+<div class="row">
+  <div class="card">
+    <h2>Generate Key</h2>
+    <p class="muted">Create a fresh ed25519 key pair (public + private) and download it.</p>
+    <a class="btn" href="/genkey">Open</a>
+  </div>
+  <div class="card">
+    <h2>Sign</h2>
+    <p class="muted">Sign a license for a customer using your private key.</p>
+    <a class="btn" href="/sign">Open</a>
+  </div>
+</div>
+<div class="card">
+  <h2>Verify</h2>
+  <p class="muted">Verify a signed license against a public key.</p>
+  <a class="btn" href="/verify">Open</a>
+</div>
+{{end}}

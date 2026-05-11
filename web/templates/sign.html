@@ -1,0 +1,60 @@
+{{define "content"}}
+<div class="card">
+  <h2>Sign License</h2>
+  <p class="muted">Fill in the license details and paste the private key (base64) to sign.</p>
+  {{if .Error}}<div class="alert err">{{.Error}}</div>{{end}}
+  <form method="post" action="/sign">
+    <label>Private key (base64)</label>
+    <textarea name="priv" required>{{.Form.Priv}}</textarea>
+
+    <div class="row">
+      <div>
+        <label>Organization *</label>
+        <input type="text" name="org" value="{{.Form.Org}}" required>
+      </div>
+      <div>
+        <label>License ID (optional)</label>
+        <input type="text" name="id" value="{{.Form.ID}}">
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <label>Issued at (leave empty for now)</label>
+        <input type="text" name="issued" value="{{.Form.Issued}}" data-flatpickr placeholder="Pick a date and time">
+      </div>
+      <div>
+        <label>Validity (days)</label>
+        <input type="number" name="days" value="{{if .Form.Days}}{{.Form.Days}}{{else}}365{{end}}" min="1">
+      </div>
+    </div>
+
+    <label>Features (comma separated)</label>
+    <input type="text" name="features" value="{{.Form.Features}}" placeholder="core,api,reports">
+
+    <button type="submit">Sign</button>
+  </form>
+</div>
+
+{{if .Result}}
+<div class="alert ok">License signed successfully.</div>
+<div class="card">
+  <h2>License (JSON)</h2>
+  <pre>{{.ResultJSON}}</pre>
+</div>
+<div class="card">
+  <h2>Encoded license</h2>
+  <p class="muted">Distribute this base64 string to the customer.</p>
+  <pre>{{.Encoded}}</pre>
+  <form method="post" action="/sign/download" style="display:inline">
+    <input type="hidden" name="encoded" value="{{.Encoded}}">
+    <button type="submit">Download license.txt</button>
+  </form>
+  <form method="post" action="/sign/download" style="display:inline">
+    <input type="hidden" name="encoded" value="{{.Encoded}}">
+    <input type="hidden" name="format" value="json">
+    <button type="submit" class="secondary">Download license.json</button>
+  </form>
+</div>
+{{end}}
+{{end}}
