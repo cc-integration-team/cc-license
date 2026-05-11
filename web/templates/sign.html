@@ -1,0 +1,70 @@
+{{define "content"}}
+<div class="card">
+  <h2>Sign License</h2>
+  <p class="muted">
+    Fill in the license details and paste the private key (base64) to sign.
+  </p>
+  {{if .Error}}
+  <div class="alert err">{{.Error}}</div>
+  {{end}}
+  <form method="post" action="/sign" enctype="multipart/form-data">
+    <label>Private key (base64)</label>
+    <textarea name="priv">{{.Form.Priv}}</textarea>
+    <p class="muted" style="margin-top: 6px">or upload a key file:</p>
+    <input type="file" name="priv_file" accept=".key,.txt,text/plain" />
+
+    <div class="row">
+      <div>
+        <label>Organization *</label>
+        <input type="text" name="org" value="{{.Form.Org}}" required />
+      </div>
+      <div>
+        <label>License ID (leave empty to auto-generate UUID)</label>
+        <input
+          type="text"
+          name="id"
+          value="{{.Form.ID}}"
+          placeholder="auto-generated UUID"
+        />
+      </div>
+    </div>
+
+    <label>Expires at *</label>
+    <input
+      type="datetime-local"
+      name="expires"
+      value="{{.Form.Expires}}"
+      step="1"
+      required
+    />
+
+    <label>Features (comma separated)</label>
+    <input
+      type="text"
+      name="features"
+      value="{{.Form.Features}}"
+      placeholder="core,api,reports"
+    />
+
+    <button type="submit">Sign</button>
+  </form>
+</div>
+
+{{if .Result}}
+<div class="alert ok">
+  License signed successfully. License ID: <code>{{.Result.License.ID}}</code>
+</div>
+<div class="card">
+  <h2>License (JSON)</h2>
+  <pre>{{.ResultJSON}}</pre>
+</div>
+<div class="card">
+  <h2>Encoded license</h2>
+  <p class="muted">Distribute this base64 string to the customer.</p>
+  <pre>{{.Encoded}}</pre>
+  <form method="post" action="/sign/download" style="display: inline">
+    <input type="hidden" name="encoded" value="{{.Encoded}}" />
+    <button type="submit">Download license.lic</button>
+  </form>
+</div>
+{{end}} {{end}}

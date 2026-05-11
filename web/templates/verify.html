@@ -1,0 +1,35 @@
+{{define "content"}}
+<div class="card">
+  <h2>Verify License</h2>
+  <p class="muted">
+    Paste the public key and the base64-encoded license to verify.
+  </p>
+  {{if .Error}}
+  <div class="alert err">{{.Error}}</div>
+  {{end}}
+  <form method="post" action="/verify" enctype="multipart/form-data">
+    <label>Public key (base64)</label>
+    <textarea name="pub">{{.Form.Pub}}</textarea>
+    <p class="muted" style="margin-top: 6px">or upload a key file:</p>
+    <input type="file" name="pub_file" accept=".key,.txt,text/plain" />
+
+    <label>Encoded license (base64)</label>
+    <textarea name="license">{{.Form.License}}</textarea>
+    <p class="muted" style="margin-top: 6px">or upload a license file:</p>
+    <input type="file" name="license_file" accept=".lic,.txt,text/plain" />
+
+    <button type="submit">Verify</button>
+  </form>
+</div>
+
+{{if .Valid}}
+<div class="alert ok">License is valid.</div>
+<div class="card">
+  <h2>License details</h2>
+  <pre>{{.ResultJSON}}</pre>
+  <p class="muted">
+    Issued at: <code>{{.IssuedAt}}</code> · Expires at:
+    <code>{{.ExpiresAt}}</code>
+  </p>
+</div>
+{{end}} {{end}}

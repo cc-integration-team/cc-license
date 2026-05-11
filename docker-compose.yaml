@@ -1,0 +1,9 @@
+services:
+  cc-license:
+    image: cc-license:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    command: ["serve"]
