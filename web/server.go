@@ -238,7 +238,7 @@ func (s *Server) handleVerify(w http.ResponseWriter, r *http.Request) {
 		}
 		data.Form = signForm{Pub: pub, License: licData}
 		if data.Form.Pub == "" || data.Form.License == "" {
-			data.Error = "public key và license không được để trống"
+			data.Error = "public key and license must not be empty"
 		} else if err := verifyFromForm(data.Form, &data); err != nil {
 			data.Error = err.Error()
 		}
