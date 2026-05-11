@@ -1,0 +1,147 @@
+name: build-images
+
+on:
+  push:
+    paths-ignore:
+      - "README.md"
+      - "docs/**"
+      - "*.md"
+    branches:
+      - main
+      - stg
+      - dev
+      - uat
+      - poc
+
+    tags:
+      - "v*.*.*"
+
+jobs:
+  build_and_push_image:
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_NAMESPACE: ${{ vars.DOCKER_NAMESPACE }}
+      DOCKER_IMAGE_NAME: ${{ vars.DOCKER_IMAGE_NAME }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check required variables
+        run: |
+          if [ -z "${{ vars.DOCKERHUB_REGISTRY }}" ] || [ -z "${{ env.DOCKER_NAMESPACE }}" ] || [ -z "${{ env.DOCKER_IMAGE_NAME }}" ]; then
+            echo "Error: Missing required environment variables"
+            exit 1
+          fi
+
+      # - name: Lint Dockerfile
+      #   uses: hadolint/hadolint-action@v3.1.0
+      #   with:
+      #     dockerfile: ./Dockerfile
+
+      - name: Login Docker Hub
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ vars.DOCKERHUB_REGISTRY }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_ACCESS_TOKEN }}
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        id: buildx
+
+      - name: Debug Buildx Cache
+        run: |
+          docker buildx inspect --bootstrap
+          echo "Checking cache availability"
+          docker buildx du
+
+      - name: Docker Metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ vars.DOCKERHUB_REGISTRY }}/${{ env.DOCKER_NAMESPACE }}/${{ env.DOCKER_IMAGE_NAME }}
+          flavor: |
+            latest=${{ github.ref_type == 'tag' }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=tag
+            type=sha,prefix=${{ github.ref_name }}-,enable=${{ github.ref_type == 'branch' }}
+
+      - name: Build Docker Image
+        uses: docker/build-push-action@v6
+        id: docker_build
+        with:
+          context: ./
+          file: ./Dockerfile
+          builder: ${{ steps.buildx.outputs.name }}
+          push: false
+          load: true
+          tags: ${{ steps.meta.outputs.tags }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Verify Built Image
+        run: |
+          docker images "${{ vars.DOCKERHUB_REGISTRY }}/${{ env.DOCKER_NAMESPACE }}/${{ env.DOCKER_IMAGE_NAME }}" | grep -E "${{ github.ref_name }}|${{ github.ref_name }}-${{ github.sha }}"
+          echo "Image built successfully"
+
+      - name: Push Docker Image
+        if: success()
+        uses: docker/build-push-action@v6
+        with:
+          context: ./
+          file: ./Dockerfile
+          builder: ${{ steps.buildx.outputs.name }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          cache-from: type=gha
+      - name: Docker Image Information
+        run: |
+          echo "Image pushed with name: ${{ steps.meta.outputs.tags }}"
+
+      - name: Cleanup
+        if: always()
+        run: |
+          docker system prune -f
+
+      - name: Logout Docker Hub
+        if: always()
+        run: docker logout ${{ vars.DOCKERHUB_REGISTRY }}
+
+  deploy_to_server:
+    needs: build_and_push_image
+    if: contains(format(',{0},', vars.ALLOWED_DEPLOY_BRANCHES), format(',{0},', github.ref_name))
+    runs-on: ubuntu-latest
+    environment: ${{ github.ref_name }}
+    steps:
+      - name: Check deploy secrets
+        run: |
+          if [ -z "${{ secrets[format('DEPLOY_HOST_{0}', github.ref_name)] }}" ] || [ -z "${{ secrets[format('DEPLOY_USER_{0}', github.ref_name)] }}" ]; then
+            echo "Error: Missing deploy secrets for ${{ github.ref_name }}"
+            exit 1
+          fi
+
+      - name: Deploy to correct server
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets[format('DEPLOY_HOST_{0}', github.ref_name)] }}
+          username: ${{ secrets[format('DEPLOY_USER_{0}', github.ref_name)] }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          timeout: 30s
+          command_timeout: 60s
+          script: |
+            IMAGE_FULL_NAME="${{ vars.DOCKERHUB_REGISTRY }}/${{ env.DOCKER_NAMESPACE }}/${{ env.DOCKER_IMAGE_NAME }}:${{ github.ref_name }}"
+            COMPOSE_PATH="${{ vars.DOCKER_COMPOSE_PATH }}"
+
+            if [ ! -d "$COMPOSE_PATH" ]; then
+              echo "Error: Docker Compose directory $COMPOSE_PATH not found!"
+              exit 1
+            fi
+
+            cd $COMPOSE_PATH || exit 1
+            docker pull $IMAGE_FULL_NAME
+            docker-compose up -d --no-deps app 2>&1 | tee deploy.log
+            docker-compose ps | grep "Up" || (echo "Error: Containers failed to start"; exit 1)
+            cat deploy.log
+            # curl -sf http://localhost:your_port/health || { echo "Health check failed"; exit 1; }
