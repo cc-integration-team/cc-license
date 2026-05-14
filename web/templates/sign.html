@@ -107,15 +107,6 @@
     }
     refreshNow();
     setInterval(refreshNow, 1000);
-
-    var btn = document.getElementById("today-btn");
-    var input = document.getElementById("expires-input");
-    if (btn && input) {
-      btn.addEventListener("click", function () {
-        var p = utcParts(new Date());
-        input.value = p.date + "T" + p.time;
-      });
-    }
   })();
 </script>
 {{end}}
